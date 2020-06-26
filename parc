@@ -1,0 +1,13 @@
+import requests
+from bs4 import BeautifulSoup
+
+URL = 'https://spb.hh.ru/search/vacancy?area=2&st=searchVacancy&text=Python&fromSearch=true&from=suggest_post'
+
+print("R")
+
+
+def main():
+    pass
+
+if __name__ == "__main__":
+    main()
