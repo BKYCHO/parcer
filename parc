@@ -1,13 +1,36 @@
 import requests
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup as BS
 
-URL = 'https://spb.hh.ru/search/vacancy?area=2&st=searchVacancy&text=Python&fromSearch=true&from=suggest_post'
 
-print("R")
+
+# Без юзерагента сайт дает ошибку 404
+
+def get_html(url):
+    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36'}
+    r = requests.get(url, headers=headers)
+    return r.text
+
+# Поиск максимального количества страниц в запросе
+
+def get_total_pages(html):
+    soup = BS(html, 'lxml')
+    pages = soup.find_all('a', class_='bloko-button HH-Pager-Control')[-1].get('data-page')
+    return int(pages)
+
 
 
 def main():
-    pass
+    url = 'https://spb.hh.ru/search/vacancy?L_is_autosearch=false&area=2&clusters=true&enable_snippets=true&text=Python&page=1'
+    base_url = 'https://spb.hh.ru/search/vacancy?L_is_autosearch=false&area=2&clusters=true&enable_snippets=true&text='
+    page_part = '&page='
+    query_part = 'Python'
+
+    pages = get_total_pages(get_html(url))
+
+    for page_number in range(0, pages+1):
+        url_full = base_url + query_part + page_part + str(page_number)
+        print(url_full)
+
 
 if __name__ == "__main__":
     main()
