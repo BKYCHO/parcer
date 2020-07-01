@@ -1,6 +1,6 @@
 import requests
 from bs4 import BeautifulSoup as BS
-
+import re
 
 
 # Без юзерагента сайт дает ошибку 404
@@ -17,6 +17,17 @@ def get_total_pages(html):
     pages = soup.find_all('a', class_='bloko-button HH-Pager-Control')[-1].get('data-page')
     return int(pages)
 
+def get_page_links(html):
+    soup = BS(html, 'lxml')
+    links = soup.find('div', class_='vacancy-serp').find_all('a', class_='bloko-link HH-LinkModifier')
+    all_links = []
+    for link in links:
+        url = link.get('href')
+        all_links.append(url)
+    return all_links
+
+
+
 
 
 def main():
@@ -27,9 +38,13 @@ def main():
 
     pages = get_total_pages(get_html(url))
 
-    for page_number in range(0, pages+1):
+    for page_number in range(0, 3): # Вторым значением потом поставить pages+1
         url_full = base_url + query_part + page_part + str(page_number)
-        print(url_full)
+        #print(url_full)
+        html = get_html(url_full)
+        print(get_page_links(html))
+
+
 
 
 if __name__ == "__main__":
