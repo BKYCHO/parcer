@@ -2,7 +2,7 @@ import requests
 from bs4 import BeautifulSoup as BS
 import re
 import csv
-
+from collections import Counter
 
 # Без юзерагента сайт дает ошибку 404
 
@@ -28,6 +28,24 @@ def get_page_links(html):
 
     return all_links
 
+def find_skills(link):
+
+    skill_list = []
+    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36'}
+    r = requests.get(link, headers=headers)
+    soup = BS(r.text, 'lxml')
+    skills = soup.find_all('span', class_='bloko-tag__section bloko-tag__section_text')
+
+
+    for skill in skills:
+        skill_list.append(skill.text.lower())
+
+
+
+    return skill_list
+
+
+
 #Records all links in a csv file
 
 def write_csv(all_links):
@@ -37,25 +55,39 @@ def write_csv(all_links):
         for row in all_links:
             writer.writerow([row])
 
+def write_csv2(set_keys):
+    with open('hh2.csv', 'a', newline="", encoding='utf-8') as f:
+        for key in set_keys.keys():
+            f.write("%s; %s\n" % (key, set_keys[key]))
+
 def main():
+
     url = 'https://spb.hh.ru/search/vacancy?L_is_autosearch=false&area=2&clusters=true&enable_snippets=true&text=Python&page=1'
     base_url = 'https://spb.hh.ru/search/vacancy?L_is_autosearch=false&area=2&clusters=true&enable_snippets=true&text='
     page_part = '&page='
     query_part = 'Python'
 
-    pages = get_total_pages(get_html(url))  # Вторым значением потом поставить pages+1 в 48 строке
+    pages = get_total_pages(get_html(url))  # Вторым значением потом поставить pages+1
     all_links = []
-    for page_number in range(0, 3): # Вторым значением потом поставить pages+1
+    all_keys = []
+    for page_number in range(0, pages): # Вторым значением потом поставить pages+1
         url_full = base_url + query_part + page_part + str(page_number)
         html = get_html(url_full)
         get_page_links(html)
         all_links.extend(get_page_links(html))
 
-    write_csv(all_links)
-    # print(all_links)
-    # value = "url"
-    # data = dict.fromkeys(all_links, value)
 
+    for link in all_links:
+        find_skills(link)
+        all_keys.extend(find_skills(link))
+    set_keys = Counter(all_keys)
+    set_keys = dict(set_keys)
+
+    write_csv2(set_keys)
+    print(set_keys)
+    print('Проверено ',len(all_links), ' вакансий.')
+    #write_csv(all_links)
+    # find_skills(all_links)
 
 
 
